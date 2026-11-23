@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Что видит сайт</title>
+<style>
+:root{color-scheme:light dark;
+  --bg:light-dark(#f3f4f1,#0e1316);--card:light-dark(#ffffff,#161d21);--ink:light-dark(#14212a,#e7ecee);
+  --mute:light-dark(#5b6b74,#8fa1aa);--line:light-dark(#e2e6e3,#253038);--acc:#d6127e;--acc2:light-dark(#0f6f8f,#59c3e0);
+  --ok:light-dark(#137a3e,#4fd08a);--warn:light-dark(#a35b00,#f0b04a);--bad:light-dark(#b3261e,#ff8a80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+code,.v{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(4vw,16px)}
+header{padding:32px 0 8px}
+h1{font-size:clamp(28px,4.5vw,44px);line-height:1.05;margin:0 0 10px;text-wrap:balance;letter-spacing:-.01em}
+.lead{color:var(--mute);max-width:68ch;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{font-size:13px;padding:6px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+.chip b{font-weight:600}
+.cam{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;margin:24px 0;align-items:start}
+@media(max-width:860px){.cam{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;aspect-ratio:4/3;background:#0b0f12;border-radius:18px;overflow:hidden;display:grid;place-items:center}
+.stage video,.stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#0b0f12}
+.stage .ph{color:#8fa1aa;text-align:center;padding:24px;font-size:15px}
+.stage .ph svg{display:block;margin:0 auto 12px;width:64px;height:64px;opacity:.7}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.flash.go{animation:fl .35s ease-out}
+@keyframes fl{from{opacity:.85}to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.flash.go{animation:none}}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+button,.btn,select{font:inherit;font-size:16px;min-height:44px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button:focus-visible,.btn:focus-visible,select:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.msg{font-size:14px;color:var(--mute);margin:10px 0 0}
+.msg.err{color:var(--bad)}
+.side h2{margin-top:0}
+@media(min-width:861px){#photoBody{max-height:min(78vh,760px);overflow:auto}}
+.file{font-size:14px;color:var(--mute);margin-top:14px}
+.file label{color:var(--acc2);cursor:pointer;text-decoration:underline}
+nav.toc{display:flex;gap:6px;overflow-x:auto;padding:10px 0;margin:8px 0 4px;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--line)}
+nav.toc a{flex:none;font-size:14px;color:var(--ink);text-decoration:none;padding:6px 10px;border-radius:8px}
+nav.toc a:hover{background:var(--card)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:18px;margin:18px 0 32px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 8px;scroll-margin-top:64px}
+.card.wide{grid-column:1/-1}
+h2{font-size:19px;margin:0 0 4px;line-height:1.25}
+.note{font-size:13.5px;color:var(--mute);margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}
+td.k{width:40%;padding-right:12px;color:var(--mute)}
+td.v{font-size:13px;overflow-wrap:anywhere;white-space:pre-wrap}
+td.v code{font-size:12px;display:block;max-height:220px;overflow:auto}
+.na{color:var(--mute);font-style:italic;font-family:system-ui,sans-serif}
+.tag{display:inline-block;font-family:system-ui,sans-serif;font-size:12px;padding:1px 7px;border-radius:6px;margin-right:4px;border:1px solid currentColor}
+.t-ok{color:var(--ok)}.t-warn{color:var(--warn)}.t-bad{color:var(--bad)}.t-info{color:var(--acc2)}
+.loading{color:var(--mute);font-size:14px;padding:6px 0 12px}
+.fpimg{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
+footer{padding:12px 0 48px;color:var(--mute);font-size:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+@media(max-width:600px){td.k{width:auto;display:block;border-top:1px solid var(--line);padding-bottom:0}td.v{display:block;border-top:0;padding-top:2px}tr{display:block}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Что этот сайт знает о вас</h1>
+  <p class="lead">Всё на странице собрано без единого вопроса к вам — кроме камеры, которая включается только по кнопке. Ничего не сохраняется на сервере: данные видны только вам.</p>
+  <div class="chips" id="chips"></div>
+</header>
+
+<section class="cam" aria-label="Камера">
+  <div>
+    <div class="stage" id="stage">
+      <div class="ph" id="ph">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"><rect x="6" y="18" width="52" height="36" rx="7"/><path d="M22 18l4-7h12l4 7"/><circle cx="32" cy="36" r="10"/></svg>
+        Камера выключена
+      </div>
+      <video id="video" playsinline muted autoplay hidden></video>
+      <img id="shot" alt="Снимок с камеры" hidden>
+      <div class="flash" id="flash"></div>
+    </div>
+    <div class="ctrl">
+      <button class="primary" id="camBtn">Включить камеру</button>
+      <button class="primary" id="shootBtn" hidden>Снять</button>
+      <select id="camSel" hidden aria-label="Выбор камеры"></select>
+      <a class="btn" id="dl" hidden>Скачать фото</a>
+    </div>
+    <p class="msg" id="camMsg"></p>
+    <p class="file">Или <label for="fileIn">выберите готовое фото</label>, чтобы посмотреть его EXIF и GPS.<input type="file" id="fileIn" accept="image/*" hidden></p>
+  </div>
+  <div class="card side" id="photo">
+    <h2>Метаданные фото</h2>
+    <p class="note">Появятся после снимка.</p>
+    <div id="photoBody"></div>
+  </div>
+</section>
+
+<nav class="toc" id="toc" aria-label="Разделы"></nav>
+<div class="grid" id="grid"></div>
+
+<footer>
+  <button id="copyBtn">Скопировать всё как JSON</button>
+  <a class="btn" id="jsonBtn" download="what-site-knows.json">Скачать JSON</a>
+  <span id="copyMsg"></span>
+</footer>
+</div>
+
+<script>
+{
+const $ = s => document.querySelector(s);
+const SECTIONS = [
+  ['net', 'Сеть и IP-адрес', 'Ваш адрес в сети, провайдер и примерное местоположение по IP.'],
+  ['server', 'Что получил сервер', 'Сырые данные HTTP-запроса: так их видит любой сервер, даже без JavaScript.'],
+  ['time', 'Время, язык и регион', 'По часовому поясу и языкам легко понять страну.'],
+  ['browser', 'Браузер и система', ''],
+  ['screen', 'Экран и окно', 'Обновляется при изменении размера окна.'],
+  ['prefs', 'Настройки отображения', 'Системные предпочтения, видимые через CSS media queries.'],
+  ['gpu', 'Видеокарта', 'WebGL и WebGPU раскрывают модель графического чипа.'],
+  ['fp', 'Цифровой отпечаток', 'Признаки, по которым браузер узнают без куки.'],
+  ['media', 'Медиаустройства и кодеки', 'Без разрешения видно только количество устройств; после доступа к камере — их названия.'],
+  ['storage', 'Куки и хранилища', 'HttpOnly-куки скрыты от JavaScript, но сервер их видит.'],
+  ['perms', 'Разрешения', 'Только чтение состояния — ни одного запроса не показывается.'],
+  ['power', 'Батарея и производительность', ''],
+  ['page', 'Страница и навигация', ''],
+];
+const R = {};                 // итоговый отчёт: R[section][label] = value
+const notes = {};
+const grid = $('#grid'), toc = $('#toc');
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const RAW = Symbol('raw');
+const raw = (html, plain) => ({[RAW]: html, toJSON: () => plain});
+const tag = (t, cls) => `<span class="tag t-${cls}">${esc(t)}</span>`;
+const yes = v => v === undefined || v === null ? undefined : (v ? 'да' : 'нет');
+const bytes = n => n == null ? undefined : n < 1024 ? n + ' Б' : n < 1048576 ? (n / 1024).toFixed(1) + ' КБ' : n < 1073741824 ? (n / 1048576).toFixed(1) + ' МБ' : (n / 1073741824).toFixed(2) + ' ГБ';
+const ms = n => n == null || isNaN(n) ? undefined : Math.round(n) + ' мс';
+
+function fmt(v) {
+  if (v && v[RAW] !== undefined) return v[RAW];
+  if (v === undefined || v === null || v === '' || (typeof v === 'number' && isNaN(v))) return '<span class="na">недоступно</span>';
+  if (typeof v === 'boolean') return v ? 'да' : 'нет';
+  if (Array.isArray(v)) {
+    if (!v.length) return '<span class="na">пусто</span>';
+    if (v.every(x => typeof x !== 'object')) return esc(v.join(', '));
+  }
+  if (typeof v === 'object') return '<code>' + esc(JSON.stringify(v, null, 1)) + '</code>';
+  return esc(v);
+}
+
+// Карточки разделов
+for (const [id, title, note] of SECTIONS) {
+  R[id] = {};
+  const c = document.createElement('section');
+  c.className = 'card' + (id === 'server' || id === 'fp' ? ' wide' : '');
+  c.id = 's-' + id;
+  c.innerHTML = `<h2>${title}</h2>${note ? `<p class="note">${note}</p>` : ''}<div class="body"><div class="loading">Собираю…</div></div>`;
+  grid.append(c);
+  toc.insertAdjacentHTML('beforeend', `<a href="#s-${id}">${title}</a>`);
+}
+
+function put(id, rows, opts = {}) {
+  if (opts.reset) R[id] = {};
+  for (const [k, v] of rows) R[id][k] = v;
+  if (opts.note) notes[id] = opts.note;
+  draw(id);
+}
+function draw(id) {
+  const box = id === 'photo' ? $('#photoBody') : $('#s-' + id + ' .body');
+  const rows = Object.entries(R[id] || {});
+  box.innerHTML = (notes[id] ? `<p class="note">${notes[id]}</p>` : '') +
+    (rows.length ? '<table>' + rows.map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td class="v">${fmt(v)}</td></tr>`).join('') + '</table>' : '');
+}
+async function safe(id, fn) {
+  try { await fn(); } catch (e) { put(id, [['Ошибка сбора', String(e && e.message || e)]]); }
+}
+async function sha256(data) {
+  const buf = typeof data === 'string' ? new TextEncoder().encode(data) : data;
+  if (!crypto.subtle) { let h = 0; const s = typeof data === 'string' ? data : String(new Uint8Array(data)); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return (h >>> 0).toString(16).padStart(8, '0'); }
+  const d = await crypto.subtle.digest('SHA-256', buf);
+  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const sleep = t => new Promise(r => setTimeout(r, t));
+const withTimeout = (p, t) => Promise.race([p, sleep(t).then(() => { throw new Error('таймаут'); })]);
+
+/* ---------- Время и язык ---------- */
+function collectTime() {
+  const ro = Intl.DateTimeFormat().resolvedOptions();
+  const d = new Date();
+  const off = -d.getTimezoneOffset();
+  const hhmm = m => (m >= 0 ? '+' : '−') + String(Math.floor(Math.abs(m) / 60)).padStart(2, '0') + ':' + String(Math.abs(m) % 60).padStart(2, '0');
+  const y = d.getFullYear();
+  const jan = -new Date(y, 0, 1).getTimezoneOffset(), jul = -new Date(y, 6, 1).getTimezoneOffset();
+  let week;
+  try { const L = new Intl.Locale(ro.locale); const wi = L.getWeekInfo ? L.getWeekInfo() : L.weekInfo; week = wi && ['', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'][wi.firstDay]; } catch {}
+  let hc; try { hc = new Intl.DateTimeFormat(undefined, {hour: 'numeric'}).resolvedOptions().hourCycle; } catch {}
+  put('time', [
+    ['Часовой пояс', ro.timeZone],
+    ['Смещение от UTC', 'UTC' + hhmm(off)],
+    ['Летнее время в поясе', jan === jul ? 'не используется' : (off === Math.max(jan, jul) ? 'используется, сейчас действует' : 'используется, сейчас не действует')],
+    ['Локальное время', d.toLocaleString()],
+    ['Время в UTC', d.toISOString()],
+    ['Основной язык', navigator.language],
+    ['Все языки браузера', navigator.languages],
+    ['Локаль форматирования', ro.locale],
+    ['Календарь', ro.calendar],
+    ['Система счисления', ro.numberingSystem],
+    ['Формат часов', hc ? (hc === 'h23' || hc === 'h24' ? '24-часовой' : '12-часовой') + ` (${hc})` : undefined],
+    ['Первый день недели', week],
+    ['Пример числа', (1234567.891).toLocaleString()],
+    ['Пример даты', d.toLocaleDateString(undefined, {dateStyle: 'full'})],
+  ]);
+}
+
+/* ---------- Браузер ---------- */
+async function collectBrowser() {
+  const n = navigator;
+  const ua = n.userAgentData;
+  put('browser', [
+    ['User-Agent', n.userAgent],
+    ['Платформа', n.platform],
+    ['Производитель', n.vendor],
+    ['Бренды (UA-CH)', ua ? ua.brands.map(b => b.brand + ' ' + b.version) : undefined],
+    ['Мобильное устройство (UA-CH)', ua ? yes(ua.mobile) : undefined],
+    ['ОС (UA-CH)', ua ? ua.platform : undefined],
+    ['Логических ядер процессора', n.hardwareConcurrency],
+    ['Оперативная память (округлённо)', n.deviceMemory ? '≈ ' + n.deviceMemory + ' ГБ' : undefined],
+    ['Точек касания', n.maxTouchPoints],
+    ['Куки включены', n.cookieEnabled],
+    ['Do Not Track', n.doNotTrack == null ? undefined : n.doNotTrack === '1' ? 'включён' : 'не включён'],
+    ['Global Privacy Control', n.globalPrivacyControl === undefined ? undefined : yes(n.globalPrivacyControl)],
+    ['Встроенный просмотр PDF', n.pdfViewerEnabled],
+    ['Управляется автоматизацией (webdriver)', n.webdriver],
+    ['Плагины', [...(n.plugins || [])].map(p => p.name)],
+    ['JavaScript-движок (эвристика)', typeof InstallTrigger !== 'undefined' || /Firefox/.test(n.userAgent) ? 'SpiderMonkey (Firefox)' : (window.chrome ? 'V8 (Chromium)' : (/AppleWebKit/.test(n.userAgent) ? 'JavaScriptCore (WebKit)' : undefined))],
+  ]);
+  if (ua && ua.getHighEntropyValues) {
+    try {
+      const h = await ua.getHighEntropyValues(['architecture', 'bitness', 'model', 'platformVersion', 'fullVersionList', 'wow64', 'formFactors']);
+      put('browser', [
+        ['Точная версия ОС (UA-CH)', h.platformVersion],
+        ['Архитектура (UA-CH)', h.architecture ? h.architecture + (h.bitness ? ' ' + h.bitness + '-бит' : '') : undefined],
+        ['Модель устройства (UA-CH)', h.model || undefined],
+        ['Полные версии (UA-CH)', h.fullVersionList ? h.fullVersionList.map(b => b.brand + ' ' + b.version) : undefined],
+        ['Форм-фактор (UA-CH)', h.formFactors],
+      ]);
+    } catch {}
+  }
+  if (n.keyboard && n.keyboard.getLayoutMap) {
+    try {
+      const m = await n.keyboard.getLayoutMap();
+      const keys = ['KeyQ', 'KeyW', 'KeyY', 'KeyZ', 'KeyA', 'Semicolon', 'BracketLeft'];
+      put('browser', [['Раскладка клавиатуры', keys.map(k => `${k}→${m.get(k) ?? '?'}`).join('  ')]]);
+    } catch {}
+  }
+}
+
+/* ---------- Экран ---------- */
+function collectScreen() {
+  const s = screen, o = s.orientation;
+  const vv = window.visualViewport;
+  put('screen', [
+    ['Разрешение экрана', `${s.width} × ${s.height} CSS px`],
+    ['Физических пикселей (примерно)', `${Math.round(s.width * devicePixelRatio)} × ${Math.round(s.height * devicePixelRatio)}`],
+    ['Плотность пикселей (DPR)', devicePixelRatio],
+    ['Доступная область', `${s.availWidth} × ${s.availHeight}`],
+    ['Смещение доступной области', s.availLeft !== undefined ? `${s.availLeft}, ${s.availTop}` : undefined],
+    ['Глубина цвета', s.colorDepth + ' бит'],
+    ['Ориентация', o ? `${o.type}, ${o.angle}°` : undefined],
+    ['Несколько мониторов', s.isExtended === undefined ? undefined : yes(s.isExtended)],
+    ['Окно браузера (внешнее)', `${outerWidth} × ${outerHeight}`],
+    ['Область страницы (внутренняя)', `${innerWidth} × ${innerHeight}`],
+    ['Положение окна на экране', `${screenX}, ${screenY}`],
+    ['Масштаб (pinch-zoom)', vv ? +vv.scale.toFixed(2) : undefined],
+    ['Панели браузера (высота)', outerHeight ? (outerHeight - innerHeight) + ' px' : undefined],
+  ], {reset: true});
+}
+
+/* ---------- Предпочтения ---------- */
+function collectPrefs() {
+  const q = (name, opts) => { for (const o of opts) if (matchMedia(`(${name}: ${o})`).matches) return o; return undefined; };
+  put('prefs', [
+    ['Тема (prefers-color-scheme)', q('prefers-color-scheme', ['dark', 'light'])],
+    ['Уменьшение анимации', q('prefers-reduced-motion', ['reduce', 'no-preference'])],
+    ['Контрастность', q('prefers-contrast', ['more', 'less', 'custom', 'no-preference'])],
+    ['Уменьшение прозрачности', q('prefers-reduced-transparency', ['reduce', 'no-preference'])],
+    ['Экономия трафика', q('prefers-reduced-data', ['reduce', 'no-preference'])],
+    ['Принудительные цвета', q('forced-colors', ['active', 'none'])],
+    ['Инверсия цветов', q('inverted-colors', ['inverted', 'none'])],
+    ['Цветовой охват', q('color-gamut', ['rec2020', 'p3', 'srgb'])],
+    ['HDR', q('dynamic-range', ['high', 'standard'])],
+    ['Основной указатель', q('pointer', ['fine', 'coarse', 'none'])],
+    ['Любой указатель', q('any-pointer', ['fine', 'coarse', 'none'])],
+    ['Наведение курсора', q('hover', ['hover', 'none'])],
+    ['Режим отображения', q('display-mode', ['fullscreen', 'standalone', 'minimal-ui', 'browser'])],
+    ['Частота обновления экрана', q('update', ['fast', 'slow', 'none'])],
+    ['Монохромный дисплей', matchMedia('(monochrome)').matches],
+  ]);
+}
+
+/* ---------- Видеокарта ---------- */
+async function collectGpu() {
+  const c = document.createElement('canvas');
+  const gl = c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl');
+  if (gl) {
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    const ext = gl.getSupportedExtensions() || [];
+    put('gpu', [
+      ['Версия WebGL', gl.getParameter(gl.VERSION)],
+      ['Язык шейдеров', gl.getParameter(gl.SHADING_LANGUAGE_VERSION)],
+      ['Видеочип (renderer)', dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)],
+      ['Производитель (vendor)', dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR)],
+      ['Макс. размер текстуры', gl.getParameter(gl.MAX_TEXTURE_SIZE)],
+      ['Макс. область вывода', [...gl.getParameter(gl.MAX_VIEWPORT_DIMS)].join(' × ')],
+      ['Сглаживание', gl.getContextAttributes().antialias],
+      ['Расширений WebGL', ext.length],
+    ]);
+  } else put('gpu', [['WebGL', 'недоступен']]);
+  if (navigator.gpu) {
+    try {
+      const a = await withTimeout(navigator.gpu.requestAdapter(), 3000);
+      if (a) {
+        const i = a.info || (a.requestAdapterInfo ? await a.requestAdapterInfo() : {});
+        put('gpu', [
+          ['WebGPU: производитель', i.vendor || undefined],
+          ['WebGPU: архитектура', i.architecture || undefined],
+          ['WebGPU: устройство', i.device || i.description || undefined],
+          ['WebGPU: возможностей', a.features ? a.features.size : undefined],
+        ]);
+      } else put('gpu', [['WebGPU', 'адаптер не выдан']]);
+    } catch (e) { put('gpu', [['WebGPU', 'ошибка: ' + e.message]]); }
+  } else put('gpu', [['WebGPU', 'не поддерживается']]);
+}
+
+/* ---------- Отпечаток ---------- */
+const FP = {};
+function canvasFp() {
+  const c = document.createElement('canvas'); c.width = 280; c.height = 60;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 280, 0); g.addColorStop(0, '#d6127e'); g.addColorStop(1, '#0f6f8f');
+  x.fillStyle = g; x.fillRect(0, 0, 280, 60);
+  x.textBaseline = 'top'; x.font = '18px Arial'; x.fillStyle = '#fff'; x.fillText('Отпечаток Cwm fjordbank 😃 ✓', 6, 6);
+  x.font = 'italic 14px Georgia'; x.fillStyle = 'rgba(255,230,0,.8)'; x.fillText('glyphs vex ƒ ∑ ≈ ♫', 8, 34);
+  x.beginPath(); x.arc(250, 30, 20, 0, Math.PI * 2); x.strokeStyle = '#fff'; x.lineWidth = 3; x.stroke();
+  return c.toDataURL();
+}
+async function audioFp() {
+  const AC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!AC) return undefined;
+  const ctx = new AC(1, 5000, 44100);
+  const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 10000;
+  const k = ctx.createDynamicsCompressor();
+  k.threshold.value = -50; k.knee.value = 40; k.ratio.value = 12; k.attack.value = 0; k.release.value = 0.25;
+  o.connect(k); k.connect(ctx.destination); o.start(0);
+  const buf = await withTimeout(new Promise((res, rej) => { ctx.oncomplete = e => res(e.renderedBuffer); const p = ctx.startRendering(); if (p && p.then) p.then(res, rej); }), 3000);
+  const d = buf.getChannelData(0); let s = 0;
+  for (let i = 4500; i < 5000; i++) s += Math.abs(d[i]);
+  return s.toFixed(10);
+}
+function fonts() {
+  const list = ['Arial', 'Helvetica Neue', 'Times New Roman', 'Courier New', 'Georgia', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS',
+    'Segoe UI', 'Calibri', 'Cambria', 'Consolas', 'Candara', 'Franklin Gothic Medium', 'Lucida Console', 'Palatino Linotype', 'Microsoft Sans Serif',
+    'San Francisco', 'SF Pro Text', 'Menlo', 'Monaco', 'Avenir', 'Avenir Next', 'Futura', 'Gill Sans', 'Optima', 'Didot', 'Baskerville', 'Hoefler Text', 'American Typewriter', 'Apple Chancery', 'PT Sans', 'PT Serif',
+    'Roboto', 'Noto Sans', 'Ubuntu', 'DejaVu Sans', 'Liberation Sans', 'Cantarell', 'Open Sans', 'Fira Code', 'JetBrains Mono', 'Source Code Pro', 'Inter',
+    'Yu Gothic', 'MS Gothic', 'Meiryo', 'PingFang SC', 'Microsoft YaHei', 'SimSun', 'Malgun Gothic', 'Arial Unicode MS', 'Wingdings', 'Symbol'];
+  const base = ['monospace', 'serif', 'sans-serif'];
+  const c = document.createElement('canvas').getContext('2d');
+  const txt = 'mmmmmmmmmmlliWW@#Ыж1';
+  const w = f => { c.font = '72px ' + f; return c.measureText(txt).width; };
+  const bw = base.map(w);
+  return list.filter(f => base.some((b, i) => w(`"${f}",${b}`) !== bw[i]));
+}
+async function voices() {
+  if (!window.speechSynthesis) return undefined;
+  let v = speechSynthesis.getVoices();
+  if (!v.length) { await Promise.race([new Promise(r => speechSynthesis.addEventListener('voiceschanged', r, {once: true})), sleep(1500)]); v = speechSynthesis.getVoices(); }
+  return v;
+}
+async function collectFp() {
+  const url = canvasFp();
+  FP.canvas = (await sha256(url)).slice(0, 16);
+  put('fp', [['Canvas-отпечаток', raw(`<img class="fpimg" src="${url}" width="280" height="60" alt=""><br>${FP.canvas}`, FP.canvas)]]);
+  try { FP.audio = await audioFp(); } catch (e) { FP.audio = undefined; }
+  put('fp', [['Аудио-отпечаток (сумма сэмплов)', FP.audio]]);
+  const f = fonts(); FP.fonts = f;
+  put('fp', [[`Установленные шрифты (${f.length} из 56 проверенных)`, f]]);
+  const v = await voices();
+  if (v) {
+    FP.voices = v.length;
+    put('fp', [[`Голоса синтеза речи (${v.length})`, v.slice(0, 60).map(x => `${x.name} [${x.lang}]${x.localService ? '' : ' ☁'}`).join('\n') + (v.length > 60 ? `\n… и ещё ${v.length - 60}` : '')]]);
+  }
+  put('fp', [['Математика движка', [Math.tan(-1e300), Math.sinh(1), Math.expm1(1), Math.cbrt(100)].join(' · ')]]);
+  await fingerprintId();
+}
+async function fingerprintId() {
+  const src = [navigator.userAgent, navigator.languages.join(), screen.width, screen.height, screen.colorDepth, devicePixelRatio,
+    Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.hardwareConcurrency, navigator.deviceMemory, navigator.maxTouchPoints,
+    R.gpu['Видеочип (renderer)'], FP.canvas, FP.audio, (FP.fonts || []).join(), FP.voices].join('|');
+  const id = (await sha256(src)).slice(0, 20);
+  put('fp', [['Итоговый ID отпечатка', raw(`<b>${id}</b><br><span class="na">хеш от UA, экрана, пояса, GPU, canvas, аудио, шрифтов и голосов — совпадает при повторных визитах даже без куки</span>`, id)]]);
+  chip('Отпечаток', id.slice(0, 10));
+}
+
+/* ---------- Медиа ---------- */
+async function collectMedia(after) {
+  const rows = [];
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    const d = await navigator.mediaDevices.enumerateDevices();
+    const kinds = {videoinput: 'Камеры', audioinput: 'Микрофоны', audiooutput: 'Динамики/выходы'};
+    for (const k in kinds) {
+      const list = d.filter(x => x.kind === k);
+      rows.push([`${kinds[k]}: ${list.length}`, list.length ? list.map((x, i) => (x.label || `без названия #${i + 1}`) + (x.deviceId ? `\n  id ${x.deviceId.slice(0, 16)}…` : '')).join('\n') : 'нет']);
+    }
+  } else rows.push(['Список устройств', 'API недоступно (нужен HTTPS или localhost)']);
+  const v = document.createElement('video'), a = document.createElement('audio');
+  const cp = (el, t) => el.canPlayType(t) || 'нет';
+  rows.push(
+    ['Видео H.264', cp(v, 'video/mp4; codecs="avc1.42E01E"')],
+    ['Видео HEVC/H.265', cp(v, 'video/mp4; codecs="hvc1.1.6.L93.B0"')],
+    ['Видео VP9', cp(v, 'video/webm; codecs="vp9"')],
+    ['Видео AV1', cp(v, 'video/mp4; codecs="av01.0.05M.08"')],
+    ['Аудио AAC', cp(a, 'audio/mp4; codecs="mp4a.40.2"')],
+    ['Аудио Opus', cp(a, 'audio/ogg; codecs="opus"')],
+    ['Аудио FLAC', cp(a, 'audio/flac')],
+    ['Запись MediaRecorder', window.MediaRecorder ? ['video/webm', 'video/mp4', 'audio/webm', 'audio/mp4'].filter(t => MediaRecorder.isTypeSupported(t)) : undefined],
+    ['Защищённый контент (EME)', !!navigator.requestMediaKeySystemAccess],
+  );
+  put('media', rows, {reset: true, note: after ? 'Обновлено после доступа к камере: сайт теперь видит названия устройств.' : undefined});
+}
+
+/* ---------- Куки и хранилища ---------- */
+function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+async function collectStorage() {
+  const ck = document.cookie ? document.cookie.split('; ').map(s => { const i = s.indexOf('='); return [s.slice(0, i), decodeURIComponent(s.slice(i + 1))]; }) : [];
+  const rows = [[`Куки, видимые JavaScript (${ck.length})`, ck.length ? ck.map(([k, v]) => `${k} = ${v}`).join('\n') : 'нет']];
+  if (!lsGet('pc_first_seen')) lsSet('pc_first_seen', new Date().toISOString());
+  let n = Number(lsGet('pc_visits') || 0) + 1; lsSet('pc_visits', n);
+  let lsKeys, ssKeys;
+  try { lsKeys = Object.keys(localStorage); } catch {}
+  try { ssKeys = Object.keys(sessionStorage); } catch {}
+  rows.push(
+    ['Первый визит (localStorage)', lsGet('pc_first_seen')],
+    ['Визитов (localStorage)', lsGet('pc_visits')],
+    ['Ключей в localStorage', lsKeys ? lsKeys.length + (lsKeys.length ? ': ' + lsKeys.join(', ') : '') : undefined],
+    ['Ключей в sessionStorage', ssKeys ? ssKeys.length : undefined],
+  );
+  if (indexedDB && indexedDB.databases) { try { const d = await indexedDB.databases(); rows.push(['Базы IndexedDB', d.length ? d.map(x => x.name) : 'нет']); } catch {} }
+  if (window.caches) { try { rows.push(['Cache Storage', (await caches.keys()).length + ' кешей']); } catch {} }
+  if (navigator.storage && navigator.storage.estimate) {
+    try { const e = await navigator.storage.estimate(); rows.push(['Квота хранилища', bytes(e.quota)], ['Использовано', bytes(e.usage)]); } catch {}
+    try { rows.push(['Хранилище постоянное', await navigator.storage.persisted()]); } catch {}
+  }
+  if (navigator.serviceWorker) { try { rows.push(['Service Workers', (await navigator.serviceWorker.getRegistrations()).length]); } catch {} }
+  put('storage', rows);
+}
+
+/* ---------- Разрешения ---------- */
+async function collectPerms(after) {
+  if (!navigator.permissions) return put('perms', [['Permissions API', 'не поддерживается']]);
+  const names = ['camera', 'microphone', 'geolocation', 'notifications', 'push', 'persistent-storage', 'clipboard-read', 'clipboard-write',
+    'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'background-sync', 'screen-wake-lock', 'local-fonts', 'window-management', 'storage-access', 'idle-detection', 'display-capture'];
+  const ru = {granted: ['разрешено', 'ok'], denied: ['запрещено', 'bad'], prompt: ['спросит', 'info']};
+  const rows = await Promise.all(names.map(async n => {
+    try {
+      const d = n === 'push' ? {name: n, userVisibleOnly: true} : {name: n};
+      const s = (await navigator.permissions.query(d)).state;
+      const [t, c] = ru[s] || [s, 'info'];
+      return [n, raw(tag(t, c), s)];
+    } catch { return [n, raw('<span class="na">не поддерживается</span>', null)]; }
+  }));
+  put('perms', rows, {reset: true, note: after ? 'Обновлено после доступа к камере.' : undefined});
+}
+
+/* ---------- Питание и производительность ---------- */
+async function collectPower() {
+  const rows = [];
+  if (navigator.getBattery) {
+    try {
+      const b = await navigator.getBattery();
+      const t = s => s === Infinity ? '—' : Math.round(s / 60) + ' мин';
+      rows.push(['Заряд батареи', Math.round(b.level * 100) + '%'], ['Заряжается', b.charging], ['До полной зарядки', t(b.chargingTime)], ['До разрядки', t(b.dischargingTime)]);
+    } catch {}
+  } else rows.push(['Батарея', 'API скрыто браузером']);
+  const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+  if (nav) rows.push(
+    ['DNS', ms(nav.domainLookupEnd - nav.domainLookupStart)],
+    ['Соединение (TCP+TLS)', ms(nav.connectEnd - nav.connectStart)],
+    ['Время до первого байта', ms(nav.responseStart - nav.requestStart)],
+    ['DOM готов', ms(nav.domContentLoadedEventEnd)],
+    ['Протокол', nav.nextHopProtocol],
+    ['Размер страницы', bytes(nav.transferSize || nav.encodedBodySize)],
+  );
+  const m = performance.memory;
+  if (m) rows.push(['Лимит памяти JS', bytes(m.jsHeapSizeLimit)], ['Занято памяти JS', bytes(m.usedJSHeapSize)]);
+  // грубая оценка производительности CPU
+  const t0 = performance.now(); let x = 0; for (let i = 0; i < 3e6; i++) x += Math.sqrt(i); const dt = performance.now() - t0;
+  rows.push(['Тест CPU (3 млн √)', dt.toFixed(1) + ' мс'], ['Точность таймера', (() => { let a = performance.now(), b; while ((b = performance.now()) === a); return +(b - a).toFixed(4) + ' мс'; })()]);
+  put('power', rows);
+}
+
+/* ---------- Страница ---------- */
+function collectPage() {
+  const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+  let reloads; try { reloads = Number(sessionStorage.getItem('pc_loads') || 0) + 1; sessionStorage.setItem('pc_loads', reloads); } catch {}
+  put('page', [
+    ['Адрес', location.href],
+    ['Защищённый контекст', isSecureContext],
+    ['Откуда пришли (referrer)', document.referrer || 'прямой заход'],
+    ['Записей в истории вкладки', history.length],
+    ['Тип перехода', nav ? nav.type : undefined],
+    ['Загрузок в этой вкладке', reloads],
+    ['Вкладка видима', document.visibilityState],
+    ['Окно в фокусе', document.hasFocus()],
+    ['Открыто из другого окна', !!window.opener],
+    ['Внутри iframe', window.top !== window.self],
+    ['Cross-origin isolated', window.crossOriginIsolated],
+    ['Кодировка', document.characterSet],
+  ]);
+}
+
+/* ---------- Сеть ---------- */
+let SRV = null;
+async function collectServer() {
+  const r = await fetch('/api/request', {cache: 'no-store', credentials: 'same-origin'});
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  SRV = await r.json();
+  const rows = [
+    ['IP-адрес клиента', SRV.client_ip + (SRV.client_ip_kind ? ' — ' + SRV.client_ip_kind : '')],
+    ['Порт клиента', SRV.client_port],
+    ['Адрес сервера', `${SRV.server_ip}:${SRV.server_port} (${SRV.server_hostname})`],
+    ['Протокол', `${SRV.scheme.toUpperCase()} · ${SRV.http_version}`],
+    ['Шифрование', SRV.tls ? `${SRV.tls.version}, ${SRV.tls.cipher} (${SRV.tls.bits} бит)` : 'нет'],
+    [`Куки, полученные сервером (${SRV.cookies.length})`, raw(SRV.cookies.length ? SRV.cookies.map(c => esc(`${c.name} = ${c.value}`) + (c.httponly ? ' ' + tag('HttpOnly — скрыта от JS', 'warn') : '')).join('<br>') : 'нет', SRV.cookies)],
+  ];
+  for (const [k, v] of SRV.headers) if (k.toLowerCase() !== 'cookie') rows.push(['Заголовок ' + k, v]);
+  put('server', rows);
+  put('net', [['IP, который видит этот сервер', SRV.client_ip + (SRV.client_ip_kind ? ' (' + SRV.client_ip_kind + ')' : '')]]);
+}
+async function collectNet() {
+  const c = navigator.connection;
+  put('net', [
+    ['В сети', navigator.onLine],
+    ['Тип соединения', c ? c.type : undefined],
+    ['Качество сети', c ? c.effectiveType : undefined],
+    ['Скорость (оценка)', c && c.downlink != null ? c.downlink + ' Мбит/с' : undefined],
+    ['Задержка (оценка)', c && c.rtt != null ? c.rtt + ' мс' : undefined],
+    ['Режим экономии трафика', c ? c.saveData : undefined],
+  ]);
+  // публичный IP и гео — запрос к стороннему сервису, без разрешений
+  try {
+    const r = await withTimeout(fetch('https://ipwho.is/?lang=ru', {cache: 'no-store'}), 6000);
+    const j = await r.json();
+    if (j.success === false) throw new Error(j.message);
+    const tzB = Intl.DateTimeFormat().resolvedOptions().timeZone, tzI = j.timezone && j.timezone.id;
+    put('net', [
+      ['Публичный IP', `${j.ip} (${j.type})`],
+      ['Страна', [j.flag && j.flag.emoji, j.country, j.country_code && `(${j.country_code})`].filter(Boolean).join(' ')],
+      ['Регион, город', [j.region, j.city, j.postal].filter(Boolean).join(', ')],
+      ['Координаты по IP (≈)', j.latitude != null ? `${j.latitude.toFixed(3)}, ${j.longitude.toFixed(3)}` : undefined],
+      ['Провайдер', j.connection && j.connection.isp],
+      ['Организация / ASN', j.connection ? `${j.connection.org || ''} · AS${j.connection.asn}` : undefined],
+      ['Пояс по IP', tzI],
+      ['Пояс по IP vs пояс браузера', raw(tzI === tzB ? tag('совпадают', 'ok') : tag(`не совпадают — браузер: ${tzB} (похоже на VPN/прокси)`, 'warn'), tzI === tzB)],
+    ]);
+    chip('IP', j.ip); if (j.country) chip('Страна', j.country);
+  } catch (e) {
+    try { const j = await (await withTimeout(fetch('https://api.ipify.org?format=json'), 5000)).json(); put('net', [['Публичный IP', j.ip]]); chip('IP', j.ip); }
+    catch { put('net', [['Публичный IP', 'не удалось получить (нет интернета или запрос заблокирован)']]); }
+  }
+  put('net', [['Источник публичного IP', 'запрос к ipwho.is — сторонний сервис видит то же самое']]);
+  await webrtc();
+}
+async function webrtc() {
+  if (!window.RTCPeerConnection) return put('net', [['WebRTC', 'не поддерживается']]);
+  const found = new Map();
+  const pc = new RTCPeerConnection({iceServers: [{urls: 'stun:stun.l.google.com:19302'}]});
+  pc.createDataChannel('x');
+  pc.onicecandidate = e => {
+    if (!e.candidate || !e.candidate.candidate) return;
+    const p = e.candidate.candidate.split(' ');
+    const addr = p[4], type = p[p.indexOf('typ') + 1];
+    if (addr && !found.has(addr)) found.set(addr, `${addr} · ${p[2].toLowerCase()} · ${type === 'host' ? 'локальный' : type === 'srflx' ? 'внешний (через STUN)' : type}`);
+  };
+  try {
+    await pc.setLocalDescription(await pc.createOffer());
+    await Promise.race([new Promise(r => pc.addEventListener('icegatheringstatechange', () => pc.iceGatheringState === 'complete' && r())), sleep(4000)]);
+  } catch {}
+  pc.close();
+  const list = [...found.values()];
+  put('net', [['Адреса из WebRTC (ICE)', list.length ? list.join('\n') + (list.some(s => s.includes('.local')) ? '\n(.local — браузер маскирует локальный IP через mDNS)' : '') : 'не получены']]);
+}
+
+/* ---------- Шапка ---------- */
+const chips = {};
+function chip(k, v) {
+  chips[k] = v;
+  $('#chips').innerHTML = Object.entries(chips).map(([a, b]) => `<span class="chip">${esc(a)}: <b>${esc(b)}</b></span>`).join('');
+}
+
+/* ---------- Камера ---------- */
+const video = $('#video'), shot = $('#shot'), camBtn = $('#camBtn'), shootBtn = $('#shootBtn'), camSel = $('#camSel'), dl = $('#dl'), msg = $('#camMsg');
+let stream = null, track = null, shotUrl = null;
+const say = (t, err) => { msg.textContent = t; msg.className = 'msg' + (err ? ' err' : ''); };
+
+async function startCam(deviceId) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    return say(isSecureContext ? 'Браузер не поддерживает доступ к камере.' : 'Камера доступна только по HTTPS или на localhost. Откройте https-адрес, который показал сервер.', true);
+  }
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  camBtn.disabled = true; say('Ждём разрешения на камеру…');
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({audio: false, video: deviceId ? {deviceId: {exact: deviceId}, width: {ideal: 4096}, height: {ideal: 2160}} : {facingMode: 'user', width: {ideal: 4096}, height: {ideal: 2160}}});
+  } catch (e) {
+    camBtn.disabled = false;
+    return say(e.name === 'NotAllowedError' ? 'Доступ к камере запрещён. Разрешить можно в настройках сайта в браузере.' : e.name === 'NotFoundError' ? 'Камера не найдена.' : 'Ошибка камеры: ' + e.message, true);
+  }
+  track = stream.getVideoTracks()[0];
+  video.srcObject = stream; video.hidden = false; shot.hidden = true; $('#ph').hidden = true;
+  camBtn.hidden = true; shootBtn.hidden = false; shootBtn.textContent = 'Снять'; shootBtn.dataset.mode = 'shoot'; dl.hidden = true;
+  const s = track.getSettings();
+  say(`${track.label || 'Камера'} · ${s.width}×${s.height}${s.frameRate ? ' · ' + Math.round(s.frameRate) + ' к/с' : ''}`);
+  const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+  if (cams.length > 1) {
+    camSel.innerHTML = cams.map((c, i) => `<option value="${esc(c.deviceId)}"${c.deviceId === s.deviceId ? ' selected' : ''}>${esc(c.label || 'Камера ' + (i + 1))}</option>`).join('');
+    camSel.hidden = false;
+  }
+  safe('media', () => collectMedia(true)); safe('perms', () => collectPerms(true));
+}
+
+async function shoot() {
+  const when = new Date();
+  const s = track.getSettings();
+  let blob, method, pcaps, psets;
+  if ('ImageCapture' in window) {
+    try {
+      const ic = new ImageCapture(track);
+      try { pcaps = await ic.getPhotoCapabilities(); } catch {}
+      try { psets = await ic.getPhotoSettings(); } catch {}
+      blob = await withTimeout(ic.takePhoto(), 5000);
+      method = 'ImageCapture.takePhoto() — полноценный снимок сенсором';
+    } catch {}
+  }
+  const w = video.videoWidth, h = video.videoHeight;
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const cx = cv.getContext('2d'); cx.drawImage(video, 0, 0, w, h);
+  if (!blob) { blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.92)); method = 'Кадр видеопотока через canvas (JPEG 92%)'; }
+  $('#flash').classList.remove('go'); void $('#flash').offsetWidth; $('#flash').classList.add('go');
+  if (shotUrl) URL.revokeObjectURL(shotUrl);
+  shotUrl = URL.createObjectURL(blob);
+  shot.src = shotUrl; shot.hidden = false; video.hidden = true;
+  shootBtn.textContent = 'Заново'; shootBtn.dataset.mode = 'again';
+  const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+  dl.href = shotUrl; dl.download = `photo-${when.toISOString().replace(/[:.]/g, '-')}.${ext}`; dl.hidden = false;
+
+  // средний цвет и яркость по уменьшенной копии
+  const sm = document.createElement('canvas'); sm.width = 32; sm.height = 24; const sx = sm.getContext('2d'); sx.drawImage(cv, 0, 0, 32, 24);
+  const px = sx.getImageData(0, 0, 32, 24).data; let r = 0, g = 0, b = 0;
+  for (let i = 0; i < px.length; i += 4) { r += px[i]; g += px[i + 1]; b += px[i + 2]; }
+  const cnt = px.length / 4; r = Math.round(r / cnt); g = Math.round(g / cnt); b = Math.round(b / cnt);
+  const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+  const bmp = await createImageBitmap(blob);
+  const rows = [
+    ['Время снимка', when.toLocaleString() + ' · ' + when.toISOString()],
+    ['Способ съёмки', method],
+    ['Формат', blob.type],
+    ['Размер файла', bytes(blob.size)],
+    ['Разрешение', `${bmp.width} × ${bmp.height} (${(bmp.width * bmp.height / 1e6).toFixed(2)} Мп)`],
+    ['Разрешение видеопотока', `${w} × ${h}`],
+    ['SHA-256', await sha256(await blob.arrayBuffer())],
+    ['Средний цвет', raw(`<span style="display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;background:${hex};border:1px solid var(--line)"></span> ${hex}`, hex)],
+    ['Средняя яркость', Math.round((0.2126 * r + 0.7152 * g + 0.0722 * b) / 2.55) + '%'],
+    ['Камера', track.label],
+    ['Состояние трека', `${track.readyState}, ${track.enabled ? 'включён' : 'выключен'}${track.muted ? ', muted' : ''}`],
+  ];
+  for (const [k, v] of Object.entries(s)) rows.push(['Настройка: ' + k, v]);
+  const caps = track.getCapabilities ? track.getCapabilities() : null;
+  if (caps) for (const [k, v] of Object.entries(caps)) {
+    if (k === 'deviceId' || k === 'groupId') continue;
+    rows.push(['Возможность: ' + k, v && typeof v === 'object' && 'min' in v ? `${+(+v.min).toFixed(2)} … ${+(+v.max).toFixed(2)}${v.step ? ' (шаг ' + v.step + ')' : ''}` : v]);
+  }
+  if (pcaps) rows.push(['Возможности фото (ImageCapture)', {redEyeReduction: pcaps.redEyeReduction, fillLightMode: pcaps.fillLightMode, imageWidth: pcaps.imageWidth && [pcaps.imageWidth.min, pcaps.imageWidth.max], imageHeight: pcaps.imageHeight && [pcaps.imageHeight.min, pcaps.imageHeight.max]}]);
+  if (psets) rows.push(['Настройки фото (ImageCapture)', psets]);
+  R.photo = {}; for (const [k, v] of rows) R.photo[k] = v;
+  await addExif(blob, 'Кадры с камеры в браузере не содержат EXIF и GPS — их добавляет только приложение «Камера».');
+  $('#photo .note').textContent = 'Снимок не покидает ваше устройство.';
+  draw('photo');
+}
+
+/* ---------- EXIF ---------- */
+const TAGS = {0x010F: 'Производитель', 0x0110: 'Модель', 0x0112: 'Ориентация', 0x011A: 'Разрешение X', 0x011B: 'Разрешение Y', 0x0131: 'Программа', 0x0132: 'Дата изменения',
+  0x013B: 'Автор', 0x8298: 'Копирайт', 0x829A: 'Выдержка, с', 0x829D: 'Диафрагма f/', 0x8827: 'ISO', 0x9003: 'Дата съёмки', 0x9004: 'Дата оцифровки', 0x9010: 'Часовой пояс съёмки',
+  0x9209: 'Вспышка', 0x920A: 'Фокусное расстояние, мм', 0xA002: 'Ширина', 0xA003: 'Высота', 0xA405: 'Фокусное (35 мм экв.)', 0xA433: 'Производитель объектива', 0xA434: 'Объектив', 0xA420: 'Уникальный ID снимка', 0xA431: 'Серийный номер камеры'};
+const GPS = {1: 'GPS широта (N/S)', 2: 'GPS широта', 3: 'GPS долгота (E/W)', 4: 'GPS долгота', 5: 'GPS высота (ниже/выше)', 6: 'GPS высота, м', 7: 'GPS время UTC', 0x0C: 'GPS ед. скорости', 0x0D: 'GPS скорость', 0x11: 'GPS направление съёмки', 0x1D: 'GPS дата'};
+function parseExif(buf) {
+  const b = new DataView(buf);
+  if (b.byteLength < 4 || b.getUint16(0) !== 0xFFD8) return null;
+  let o = 2;
+  while (o < b.byteLength - 10) {
+    const m = b.getUint16(o); if ((m & 0xFF00) !== 0xFF00) break;
+    const len = b.getUint16(o + 2);
+    if (m === 0xFFE1 && b.getUint32(o + 4) === 0x45786966) return readTiff(b, o + 10);
+    if (m === 0xFFDA) break;
+    o += 2 + len;
+  }
+  return null;
+}
+function readTiff(b, t) {
+  const le = b.getUint16(t) === 0x4949, u16 = p => b.getUint16(p, le), u32 = p => b.getUint32(p, le);
+  const SZ = {1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8};
+  const out = {};
+  const ifd = (p, names) => {
+    const n = u16(t + p), subs = [];
+    for (let i = 0; i < n; i++) {
+      const e = t + p + 2 + i * 12, tg = u16(e), ty = u16(e + 2), cnt = u32(e + 4);
+      const vp = (SZ[ty] || 1) * cnt > 4 ? t + u32(e + 8) : e + 8;
+      if (vp + (SZ[ty] || 1) * Math.min(cnt, 64) > b.byteLength) continue;
+      let v;
+      if (ty === 2) { v = ''; for (let k = 0; k < cnt - 1 && k < 200; k++) v += String.fromCharCode(b.getUint8(vp + k)); v = v.trim(); }
+      else if (ty === 3) v = cnt === 1 ? u16(vp) : Array.from({length: Math.min(cnt, 8)}, (_, k) => u16(vp + k * 2));
+      else if (ty === 4 || ty === 9) v = u32(vp);
+      else if (ty === 1 || ty === 7) v = cnt === 1 ? b.getUint8(vp) : (cnt <= 8 ? Array.from({length: cnt}, (_, k) => b.getUint8(vp + k)) : `(${cnt} байт)`);
+      else if (ty === 5 || ty === 10) {
+        const rd = k => { const a = ty === 5 ? u32(vp + k * 8) : b.getInt32(vp + k * 8, le), d = ty === 5 ? u32(vp + k * 8 + 4) : b.getInt32(vp + k * 8 + 4, le); return d ? +(a / d).toFixed(6) : 0; };
+        v = cnt === 1 ? rd(0) : Array.from({length: Math.min(cnt, 4)}, (_, k) => rd(k));
+      } else v = `(тип ${ty})`;
+      if (names === TAGS && (tg === 0x8769 || tg === 0x8825)) subs.push([tg, v]);
+      else if (names[tg]) out[names[tg]] = v;
+    }
+    for (const [tg, off] of subs) ifd(off, tg === 0x8825 ? GPS : TAGS);
+  };
+  ifd(u32(t + 4), TAGS);
+  const dms = a => Array.isArray(a) ? a[0] + a[1] / 60 + a[2] / 3600 : a;
+  if (out['GPS широта'] !== undefined) {
+    const lat = dms(out['GPS широта']) * (out['GPS широта (N/S)'] === 'S' ? -1 : 1), lon = dms(out['GPS долгота']) * (out['GPS долгота (E/W)'] === 'W' ? -1 : 1);
+    out['GPS координаты'] = raw(`${tag('местоположение в файле!', 'bad')} ${lat.toFixed(6)}, ${lon.toFixed(6)} · <a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}" target="_blank" rel="noopener">на карте</a>`, [lat, lon]);
+  }
+  return out;
+}
+async function addExif(blob, emptyMsg) {
+  let ex = null;
+  try { ex = parseExif(await blob.arrayBuffer()); } catch {}
+  if (ex && Object.keys(ex).length) for (const [k, v] of Object.entries(ex)) R.photo['EXIF: ' + k] = v;
+  else R.photo['EXIF'] = emptyMsg;
+}
+$('#fileIn').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  R.photo = {'Файл': f.name, 'Тип': f.type || 'неизвестен', 'Размер': bytes(f.size), 'Изменён': new Date(f.lastModified).toLocaleString()};
+  try { const bm = await createImageBitmap(f); R.photo['Разрешение'] = `${bm.width} × ${bm.height}`; } catch {}
+  await addExif(f, 'EXIF не найден (не JPEG или метаданные удалены при загрузке — iOS и многие мессенджеры их вырезают).');
+  if (shotUrl) URL.revokeObjectURL(shotUrl);
+  shotUrl = URL.createObjectURL(f); shot.src = shotUrl; shot.hidden = false; video.hidden = true; $('#ph').hidden = true;
+  $('#photo .note').textContent = 'Файл обработан в браузере и никуда не отправлялся.';
+  draw('photo');
+  e.target.value = '';
+});
+
+camBtn.addEventListener('click', () => startCam());
+shootBtn.addEventListener('click', () => {
+  if (shootBtn.dataset.mode === 'again') { shot.hidden = true; video.hidden = false; dl.hidden = true; shootBtn.textContent = 'Снять'; shootBtn.dataset.mode = 'shoot'; video.play().catch(() => {}); }
+  else if (track && track.readyState === 'live') shoot().catch(e => say('Не удалось сделать снимок: ' + e.message, true));
+  else startCam();
+});
+camSel.addEventListener('change', () => startCam(camSel.value));
+
+/* ---------- Экспорт ---------- */
+const report = () => JSON.stringify({collected_at: new Date().toISOString(), ...R}, null, 2);
+$('#copyBtn').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(report()); $('#copyMsg').textContent = 'Скопировано'; }
+  catch { const t = document.createElement('textarea'); t.value = report(); document.body.append(t); t.select(); try { document.execCommand('copy'); $('#copyMsg').textContent = 'Скопировано'; } catch { $('#copyMsg').textContent = 'Не удалось скопировать'; } t.remove(); }
+});
+$('#jsonBtn').addEventListener('click', () => { const u = URL.createObjectURL(new Blob([report()], {type: 'application/json'})); $('#jsonBtn').href = u; setTimeout(() => URL.revokeObjectURL(u), 5000); });
+
+/* ---------- Запуск ---------- */
+chip('Соединение', isSecureContext ? (location.protocol === 'https:' ? 'HTTPS' : 'localhost') : 'HTTP — камера недоступна');
+if (location.protocol === 'file:') put('server', [['Сервер', 'Страница открыта как файл. Запустите python3 server.py и откройте адрес из консоли.']]);
+safe('time', collectTime);
+safe('screen', collectScreen);
+safe('prefs', collectPrefs);
+safe('page', collectPage);
+safe('browser', collectBrowser);
+safe('storage', collectStorage);
+safe('perms', () => collectPerms(false));
+safe('media', () => collectMedia(false));
+safe('gpu', collectGpu).then(() => safe('fp', collectFp));
+safe('power', collectPower);
+if (location.protocol !== 'file:') safe('server', collectServer);
+safe('net', collectNet);
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => safe('screen', collectScreen), 200); });
+}
+</script>
+</body>
+</html>
