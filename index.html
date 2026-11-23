@@ -435,6 +435,11 @@ async function collectMedia(after) {
 function lsGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
 async function collectStorage() {
+  // Своя куки из JavaScript — работает и без сервера (например, на GitHub Pages)
+  if (!/(?:^|; )js_visitor_id=/.test(document.cookie)) {
+    const id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)).replace(/-/g, '').slice(0, 16);
+    document.cookie = `js_visitor_id=${id}; Max-Age=31536000; Path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+  }
   const ck = document.cookie ? document.cookie.split('; ').map(s => { const i = s.indexOf('='); return [s.slice(0, i), decodeURIComponent(s.slice(i + 1))]; }) : [];
   const rows = [[`Куки, видимые JavaScript (${ck.length})`, ck.length ? ck.map(([k, v]) => `${k} = ${v}`).join('\n') : 'нет']];
   if (!lsGet('pc_first_seen')) lsSet('pc_first_seen', new Date().toISOString());
@@ -525,8 +530,9 @@ function collectPage() {
 /* ---------- Сеть ---------- */
 let SRV = null;
 async function collectServer() {
-  const r = await fetch('/api/request', {cache: 'no-store', credentials: 'same-origin'});
-  if (!r.ok) throw new Error('HTTP ' + r.status);
+  let r = null;
+  try { r = await fetch('api/request', {cache: 'no-store', credentials: 'same-origin'}); } catch {}
+  if (!r || !r.ok || !(r.headers.get('content-type') || '').includes('json')) return staticServer();
   SRV = await r.json();
   const rows = [
     ['IP-адрес клиента', SRV.client_ip + (SRV.client_ip_kind ? ' — ' + SRV.client_ip_kind : '')],
@@ -539,6 +545,17 @@ async function collectServer() {
   for (const [k, v] of SRV.headers) if (k.toLowerCase() !== 'cookie') rows.push(['Заголовок ' + k, v]);
   put('server', rows);
   put('net', [['IP, который видит этот сервер', SRV.client_ip + (SRV.client_ip_kind ? ' (' + SRV.client_ip_kind + ')' : '')]]);
+}
+// Статический хостинг (GitHub Pages): своего сервера нет — показываем, что видит сторонний сервер
+async function staticServer() {
+  const rows = [['Режим', 'статический хостинг: у страницы нет своего сервера, поэтому ниже то, что получает сторонний сервис httpbin.org от одного запроса вашего браузера']];
+  try {
+    const j = await (await withTimeout(fetch('https://httpbin.org/get', {cache: 'no-store'}), 6000)).json();
+    rows.push(['IP, который видит сторонний сервер', j.origin]);
+    for (const [k, v] of Object.entries(j.headers || {})) rows.push(['Заголовок ' + k, v]);
+  } catch { rows.push(['httpbin.org', 'не ответил']); }
+  rows.push(['Чего здесь нет', 'Хостинг (GitHub) всё равно видит ваш IP, User-Agent и Referer в своих логах — сайт к ним доступа не имеет.']);
+  put('server', rows, {note: 'Без собственного сервера сайт не видит HttpOnly-куки и Client Hints. Чтобы увидеть всё, запустите server.py локально.'});
 }
 async function collectNet() {
   const c = navigator.connection;
